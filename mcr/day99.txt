@@ -1,0 +1,32 @@
+startmacro/quiet A:infile
+local tempfiles line index input meanval maxval maxidx total
+res tempfiles "indata"
+erase/nowarn ^tempfiles
+
+! Parse input
+res line " "
+res index 0
+res input 10
+mfile open input infile
+while line neqs "[EOF]"
+  sedit line line STRIM
+  if line eqs ""
+    print "Skipping empty line"
+  elseif ^line isnum
+    calc index index+1
+    calc indata(index) ^line
+  else
+    print "Unknown input: '^line'"
+  endif
+  mfile read input line
+endwhile
+
+print " === First Star === "
+fstat indata MEAN=meanval MAXV=maxval MAXI=maxidx SUM=total
+print "Maximum value is ^maxval (at index ^maxidx) and sum is ^total"
+
+! print " === Second Star === "
+
+
+erase ^tempfiles
+endmacro

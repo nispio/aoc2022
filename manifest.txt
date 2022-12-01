@@ -1,0 +1,5 @@
+[MANIFEST]
+Name:          AOC2022
+Version:       1.0.0
+Date:          01-Dec-2022
+Description:   X-Midas Advent of Code Challenge 2022
