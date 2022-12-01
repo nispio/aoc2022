@@ -1,0 +1,17 @@
+s a:f
+res i 0
+res l " "
+mfi open 3 f
+while l neqs "[EOF]"
+if l eqs "" or l eqs " "
+res i i+1
+res c(i) 0
+elseif ^l isnum
+res c(i) ^l+c(i)
+endif
+mfi read 3 l
+endw
+fst c MAXV
+qso c s D
+fst s(:3) SUM
+endmacro
