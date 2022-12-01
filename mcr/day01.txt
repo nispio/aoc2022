@@ -1,0 +1,31 @@
+startmacro/quiet A:infile
+local tempfiles line input elf maxcals totalcals
+res tempfiles "calories sortedcals"
+erase/nowarn ^tempfiles
+
+! Parse input
+res elf 0
+res line " "
+res input 10
+mfile open input infile
+while line neqs "[EOF]"
+  if line eqs "" or line eqs " "
+    calc elf elf+1
+    calc calories(elf) 0
+  elseif ^line isnum
+    calc calories(elf) calories(elf) ^line +
+  endif
+  mfile read input line
+endwhile
+
+print " === First Star === "
+maxmin calories maxcals
+print "The top elf carries ^maxcals calories"
+
+print " === Second Star === "
+qsort calories sortedcals D
+fstat sortedcals(:3) SUM=totalcals
+print "The top 3 elves carry ^totalcals calories"
+
+erase ^tempfiles
+endmacro
