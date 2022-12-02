@@ -1,0 +1,12 @@
+s a:f
+csvconv/delim=" " f g 3000 u/A v/A
+res s 0
+res t 0
+loop g(hcb.sz) i
+sedit ABC o SEAR ^g(i;1)
+sedit XYZ m SEAR ^g(i;2)
+calc s s+m 4+m-o 3 MOD 3 * +
+calc t 3*m-2+t o+m 3 MOD +
+endl
+say "^s ^t"
+endmacro
