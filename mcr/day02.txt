@@ -1,31 +1,40 @@
 startmacro/quiet A:infile
-local tempfiles line index input meanval maxval maxidx total
-res tempfiles "indata"
+local tempfiles line input idx opp mine score
+res tempfiles "guide"
 erase/nowarn ^tempfiles
 
 ! Parse input
-res line " "
-res index 0
-res input 10
-mfile open input infile
-while line neqs "[EOF]"
-  sedit line line STRIM
-  if line eqs ""
-    print "Skipping empty line"
-  elseif ^line isnum
-    calc index index+1
-    calc indata(index) ^line
-  else
-    print "Unknown input: '^line'"
-  endif
-  mfile read input line
-endwhile
+csvconvert/delim=" " infile guide 3000 u/A v/A
 
 print " === First Star === "
-fstat indata MEAN=meanval MAXV=maxval MAXI=maxidx SUM=total
-print "Maximum value is ^maxval (at index ^maxidx) and sum is ^total"
+res L:score 0
+loop guide(hcb.sz) idx
+  sedit "ABC" opp SEARCH ^guide(idx;1)
+  sedit "XYZ" mine SEARCH ^guide(idx;2)
+  if mine eq opp
+    calc score score mine 3 + +
+  elseif mine eq calc(opp 3 mod 1 +)
+    calc score score mine 6 + +
+  else
+    calc score score mine +
+  endif
+endloop
+print "My score is ^score"
 
-! print " === Second Star === "
+
+print " === Second Star === "
+res L:score 0
+loop guide(hcb.sz) idx
+  sedit "ABC" opp SEARCH ^guide(idx;1)
+  if ^guide(idx;2) eqs "X"
+    calc score score opp 1 + 3 mod 1 + +
+  elseif ^guide(idx;2) eqs "Y"
+    calc score score opp + 3 +
+  else
+    calc score score opp 3 mod + 1 + 6 +
+  endif
+endloop
+print "My score is ^score"
 
 
 erase ^tempfiles
