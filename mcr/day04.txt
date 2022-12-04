@@ -1,0 +1,26 @@
+startmacro/quiet A:infile
+local tempfiles index
+res tempfiles "indata contained overlap"
+erase/nowarn ^tempfiles
+
+csvconvert infile indata 3000 u/A v/A
+
+loop indata(hcb.sz) index
+  sedit "^{indata(index;1)}" L:r1min(index) ELEMENT 1 "-"
+  sedit "^{indata(index;1)}" L:r1max(index) ELEMENT 2 "-"
+  sedit "^{indata(index;2)}" L:r2min(index) ELEMENT 1 "-"
+  sedit "^{indata(index;2)}" L:r2max(index) ELEMENT 2 "-"
+endloop
+
+print " === First Star === "
+fcalc/type=L contained r1min r2min LE r1max r2max GE BAND &
+                       r2min r1min LE r2max r1max GE BAND BOR
+fstat/quiet=0 contained SUM
+
+print " === Second Star === "
+fcalc/type=L overlap r1min r2min LE r1max r2min GE BAND &
+                     r2min r1min LE r2max r1min GE BAND BOR
+fstat/quiet=0 overlap SUM
+
+erase ^tempfiles
+endmacro
