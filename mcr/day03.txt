@@ -1,0 +1,42 @@
+startmacro/quiet A:infile
+local tempfiles line index pos len left right priorities n
+res tempfiles "indata points val common badge"
+erase/nowarn ^tempfiles
+
+csvconvert infile indata 1000 8A
+res priorities "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+print " === First Star === "
+loop indata(hcb.sz) index
+  sedit "^{indata(index)}" len LENGTH
+  sedit "^{indata(index)}" left RANGE 1 len/2
+  sedit "^{indata(index)}" right RANGE len/2+1 0
+  ! print "^index: ^left/^right"
+  loop len/2 pos
+    sedit "^left" char RANGE ^pos ^pos
+    sedit "^right" match SEARCH "^char"
+    if match gt 0
+      sedit priorities points(index) SEARCH "^char"
+      ! print "^index  Duplicate is '^char' for ^points(index) points"
+      break
+    endif
+  endloop
+endloop
+fstat/quiet=0 points SUM
+
+print " === Second Star === "
+loop indata(hcb.sz) index
+  sedit "^{indata(index)}" len LENGTH
+  calc/type=X X:val(index) 0
+  loop len pos
+    sedit "^{indata(index)}" char RANGE ^pos ^pos
+    sedit priorities n SEARCH "^char"
+    calc/type=X val(index) val(index) 2**^n BOR
+  endloop
+endloop
+fcalc/tl=1/type=X common val(1:)(cl=3) val(2:)(cl=3) val(3:)(cl=3) BAND BAND
+fcalc badge common log 2 log /
+fstat/quiet=0 badge SUM
+
+! erase ^tempfiles
+endmacro
