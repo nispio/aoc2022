@@ -1,5 +1,5 @@
 startmacro/quiet A:infile
-local tempfiles line index size mid head tail dir vec magnitude delta
+local tempfiles line index size mid head tail vec magnitude delta
 res tempfiles "steps"
 erase/nowarn ^tempfiles
 
@@ -23,17 +23,17 @@ envi file open rope
 
 loop steps(hcb.sz) n
   if steps(n;~dir) eqs "U"
-    res L:dir (0,1)
+    res dir(n) (0,1)
   elseif steps(n;~dir) eqs "D"
-    res L:dir (0,-1)
+    res dir(n) (0,-1)
   elseif steps(n;~dir) eqs "L"
-    res L:dir (-1,0)
+    res dir(n) (-1,0)
   elseif steps(n;~dir) eqs "R"
-    res L:dir (1,0)
+    res dir(n) (1,0)
   endif
 
   loop steps(n;~len) l
-    calc L:delta dir
+    calc L:delta dir(n)
     calc rope(1) rope(1) delta +
     loop 9 k
       calc vec rope(k) rope(k+1) -

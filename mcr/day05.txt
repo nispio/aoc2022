@@ -1,0 +1,46 @@
+startmacro/quiet A:infile
+local tempfiles line numlines input n k pos meanval maxval maxidx total
+res tempfiles "height"
+erase/nowarn ^tempfiles
+
+loop 9 n
+  res L:height(n) 0
+endloop
+
+! Parse input
+res numlines -1
+res input 10
+mfile open input infile
+mfile read input line
+while line neqs ""
+  calc numlines numlines+1
+  loop 9 n
+    calc pos n 1 - 4 * 2 +
+    sedit line char BETWEEN pos pos STRIM
+    if char neqs ""
+      calc height(n) height(n) 1 +
+      res A:column^{n}(height(n)) "^char"
+    endif
+  endloop
+  mfile read input line
+endwhile
+csvconvert/ignore=numlines+2/delim=" " infile steps 3000 &
+    move/A num/L from/A src/L to/A dest/L
+
+print " === First Star === "
+loop 9 n
+  print "column^{n}"
+  if height(n) gt 0
+    ! flip column^{n}(:^{height(n)}-1) stack^n
+    noop column^{n}(:^{height(n)}-1) stack^n
+    datal/nc=1 stack^n
+  endif
+  erase/nowarn column^{n}
+endloop
+datal/nc=1 steps
+
+! print " === Second Star === "
+
+
+erase ^tempfiles
+endmacro

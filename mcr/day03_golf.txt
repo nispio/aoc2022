@@ -1,0 +1,9 @@
+s a:f
+csvconv imp f g 3
+mdx/nohdr imp f c 3
+res k 1
+loop g(hcb.sz) i
+  sedit g(i) l LEN
+
+endl
+endmacro
