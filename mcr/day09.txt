@@ -1,0 +1,70 @@
+startmacro/quiet A:infile
+local tempfiles line index size mid head tail dir vec magnitude delta
+res tempfiles "steps"
+erase/nowarn ^tempfiles
+
+csvconvert/delim=" " infile steps 3000 "dir/A" "len/L"
+res size 601
+calc L:mid size 2 / CEIL
+const rope CI 10 ^mid ^mid
+
+const map1 SI ^size*^size 0
+headermod map1 t=2000 fs=^size
+res map1(^mid;^mid) 1
+
+const map2 SI ^size*^size 0
+headermod map2 t=2000 fs=^size
+res map2(^mid;^mid) 1
+
+envi file open steps
+envi file open map1
+envi file open map2
+envi file open rope
+
+loop steps(hcb.sz) n
+  if steps(n;~dir) eqs "U"
+    res L:dir (0,1)
+  elseif steps(n;~dir) eqs "D"
+    res L:dir (0,-1)
+  elseif steps(n;~dir) eqs "L"
+    res L:dir (-1,0)
+  elseif steps(n;~dir) eqs "R"
+    res L:dir (1,0)
+  endif
+
+  loop steps(n;~len) l
+    calc L:delta dir
+    calc rope(1) rope(1) delta +
+    loop 9 k
+      calc vec rope(k) rope(k+1) -
+      calc magnitude vec MAG2
+      if magnitude LT 4
+        calc delta (0,0)
+      elseif magnitude EQ 4
+        calc delta vec 2 /
+      elseif calc(delta MAG2) EQ 1
+        calc delta vec delta -
+      endif
+      calc rope(k+1) rope(k+1) delta +
+    endloop
+    res map1(rope(2;2);rope(2;1)) 1
+    res map2(rope(10;2);rope(10;1)) 1
+  endloop
+endloop
+
+envi file close rope
+envi file close map2
+envi file close map1
+envi file close steps
+
+
+print " === First Star === "
+fstat/quiet=0 map1 SUM
+xraster/bg/all/xh=800/xw=400/nospec map1
+
+print " === Second Star === "
+fstat/quiet=0 map2 SUM
+xraster/bg/all/xh=800/xw=400/nospec map2
+
+erase ^tempfiles
+endmacro
