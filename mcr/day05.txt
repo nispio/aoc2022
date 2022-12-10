@@ -1,13 +1,14 @@
 startmacro/quiet A:infile
-local tempfiles line numlines input n k pos meanval maxval maxidx total
+local tempfiles line numlines input n k l pos x y z src dest num char
 res tempfiles "height"
 erase/nowarn ^tempfiles
 
+! Initialize the per-stack height variable
 loop 9 n
   res L:height(n) 0
 endloop
 
-! Parse input
+! Parse the stack layout
 res numlines -1
 res input 10
 mfile open input infile
@@ -24,23 +25,58 @@ while line neqs ""
   endloop
   mfile read input line
 endwhile
+
+! Flip the stacks (Can't use FLIP;BETA because it doesn't support type 'A')
+loop 9 n
+  res height(n) height(n)-1
+  loop height(n) k
+    res stack^{n}(k) column^{n}(^{height(n)}-k+1)
+    res ostack^{n}(k) column^{n}(^{height(n)}-k+1)
+  endloop
+  erase/nowarn column^n
+endloop
+
+! Parse the movement steps for the crane
 csvconvert/ignore=numlines+2/delim=" " infile steps 3000 &
-    move/A num/L from/A src/L to/A dest/L
+    "move/A" "num/L" "from/A" "src/L" "to/A" "dest/L"
+
+! Move the stacks according to the steps
+loop steps(hcb.sz) n
+  res num steps(n;~num)
+  res src steps(n;~src)
+  res dest steps(n;~dest)
+  loop num k
+    calc x k height(dest) +
+    ! Move crates one at a time (First Star)
+    calc y 1 height(src) + k -
+    res stack^{dest}(x) stack^{src}(y)
+    ! Move crates all at once (Second Star)
+    calc z k height(src) + num -
+    res ostack^{dest}(x) ostack^{src}(z)
+  endloop
+  calc height(src) height(src) num -
+  calc height(dest) height(dest) num +
+endloop
 
 print " === First Star === "
 loop 9 n
-  print "column^{n}"
-  if height(n) gt 0
-    ! flip column^{n}(:^{height(n)}-1) stack^n
-    noop column^{n}(:^{height(n)}-1) stack^n
-    datal/nc=1 stack^n
+  if stack^n FEXISTS and height(n) GT 0
+    print "^{stack^{n}(^{height(n)})}"
+  else
+    print "."
   endif
-  erase/nowarn column^{n}
+  erase/nowarn stack^n
 endloop
-datal/nc=1 steps
 
-! print " === Second Star === "
-
+print " === Second Star === "
+loop 9 n
+  if ostack^n FEXISTS and height(n) GT 0
+    print "^{ostack^{n}(^{height(n)})}"
+  else
+    print "."
+  endif
+  erase/nowarn ostack^n
+endloop
 
 erase ^tempfiles
 endmacro
