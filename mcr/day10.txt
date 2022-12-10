@@ -1,0 +1,41 @@
+startmacro/quiet A:infile
+local tempfiles line cycle index total pixel
+res tempfiles "indata x screen"
+erase/nowarn ^tempfiles
+
+csvconvert/delim=" " infile indata 3000 inst/A val/L
+envi file open indata
+res L:cycle 1
+calc L:x(1) 1
+loop indata(hcb.sz) n
+ calc cycle cycle+1
+ if indata(n;~inst) eqs "addx"
+   calc x(cycle) x(cycle-1)
+   calc cycle cycle+1
+   calc x(cycle) x(cycle-1) indata(n;~val) +
+ elseif indata(n;~inst) eqs "noop"
+   calc x(cycle) x(cycle-1)
+ else
+   print "Unexpected indata: ^{indata(n;~inst)}"
+ endif
+endloop
+envi file close indata
+
+print " === First Star === "
+res L:total 0
+res L:index 20
+while index le x(hcb.sz)
+  calc total total index x(index) * +
+  calc index index 40 +
+endwhile
+print "^total"
+
+print " === Second Star === "
+loop 40*6 index
+  calc L:pixel index 1 - 40 mod 1 +
+  calc/type=L screen(index) pixel x(index) - ENT 0 GE X<>Y 3 LT BAND
+endloop
+xraster screen(fs=40)
+
+erase ^tempfiles
+endmacro
