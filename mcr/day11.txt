@@ -1,0 +1,112 @@
+startmacro/quiet A:infile
+local tempfiles line idx input k m n p q items operator operand old new round lcm
+res tempfiles "notes backup_notes sorted files"
+erase/nowarn ^tempfiles
+
+f3000/size=10 notes num/L size/L strt/4A op/2A div/L true/L fals/L insp/X
+
+! Parse input
+res line " "
+res idx 0
+res input 10
+mfile open input infile
+while line neqs "[EOF]"
+  calc idx idx+1
+  calc n idx-1
+  mfile read input line
+  res notes(idx;~num) n
+  res notes(idx;~insp) 0
+
+  mfile read input line
+  sedit line notes(idx;~strt) ELEMENT 2 ":"
+  sedit notes(idx;~strt) notes(idx;~size) nele ","
+  loop notes(idx;~size) k
+    sedit notes(idx;~strt) X:monkey^{n}(k) ELEMENT k "," STRIM
+  endloop
+
+  mfile read input line
+  sedit line A:operator PARSE 5
+  sedit line A:operand PARSE 6 UPCASE
+  if operand eqs "OLD" res U:operand old
+  res notes(idx;~op) "^operand ^operator"
+
+  mfile read input line
+  sedit line notes(idx;~div) PARSE 4
+  mfile read input line
+  sedit line notes(idx;~true) PARSE 6
+  mfile read input line
+  sedit line notes(idx;~fals) PARSE 6
+
+  ! Blank line between monkeys
+  mfile read input line
+endwhile
+headermod notes SZ=^idx
+noop notes backup_notes
+
+print " === First Star === "
+loop 20 round
+  ! print "Round ^round"
+  loop notes(hcb.sz) idx
+    calc n idx-1
+    ! print "  Monkey ^{n}:"
+    res L:p notes(idx;~size)
+    calc notes(idx;~insp) notes(idx;~insp) p +
+    loop p k
+      res X:old monkey^{n}(p-k+1)
+      ! print "    Monkey inspects an item with a worry level of ^old"
+      calc/type=L X:new old ^{notes(idx;~op)} 3 /
+      calc L:m notes(idx;~fals) notes(idx;~true) new notes(idx;~div) MOD X?Z:Y
+      ! print "      Item with worry level ^new is thrown to monkey ^m"
+      calc L:q ^{notes(^m+1;~size)} 1 +
+      res monkey^{m}(q) new
+      res notes(m+1;~size) q
+    endloop
+    res notes(idx;~size) 0
+  endloop
+endloop
+
+qsort notes sorted D INSP
+calc/quiet=0 monkey_business sorted(1;~insp) sorted(2;~insp) *
+noop backup_notes notes
+
+print " === Second Star === "
+envi file open notes
+res X:lcm 1
+loop notes(hcb.sz) idx
+  calc n idx-1
+  envi file open monkey^n
+  loop notes(idx;~size) k
+    sedit notes(idx;~strt) X:monkey^{n}(k) ELEMENT k "," STRIM
+  endloop
+  calc/type=X lcm lcm notes(idx;~div) *
+endloop
+
+print "Round 1"
+loop 10000 round
+  if calc(round 100 MOD) eq 0 print "Round ^round"
+  loop notes(hcb.sz) idx
+    calc n idx-1
+    ! print "  Monkey ^{n}:"
+    res L:p notes(idx;~size)
+    calc notes(idx;~insp) notes(idx;~insp) p +
+    loop p k
+      calc/type=X X:old monkey^{n}(p-k+1)
+      ! print "    Monkey inspects an item with a worry level of ^old"
+      calc/type=X X:new old ^{notes(idx;~op)}
+      calc/type=X L:m notes(idx;~fals) notes(idx;~true) new notes(idx;~div) MOD X?Z:Y
+      ! print "      Item with worry level ^new is thrown to monkey ^m"
+      calc L:q ^{notes(^m+1;~size)} 1 +
+      calc monkey^{m}(q) new lcm MOD
+      res notes(m+1;~size) q
+    endloop
+    res notes(idx;~size) 0
+  endloop
+endloop
+
+qsort notes sorted D INSP
+calc/quiet=0 monkey_business sorted(1;~insp) sorted(2;~insp) *
+
+files/f monkey*
+forall files erase/nowarn #
+erase ^tempfiles
+endmacro
