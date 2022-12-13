@@ -1,0 +1,64 @@
+startmacro/quiet A:infile
+local line index input n left right numl numr xl xr dl dr inorder total
+
+print " === First Star === "
+res total 0
+res line " "
+res index 0
+res input 10
+mfile open input infile
+while line neqs "[EOF]"
+  calc index index+1
+  mfile read input left
+  mfile read input right
+  mfile read input line
+
+  res dl 0
+  res dr 0
+  res inorder 0
+
+  sedit left numl NELE ","
+  sedit right numr NELE ","
+  loop calc(numl numr MAX) n
+    sedit left A:xl ELEMENT n ","
+    sedit right A:xr ELEMENT n ","
+    while "[" SUBS xl
+      calc dl dl+1
+      sedit xl xl BETWEEN 2 0
+    endwhile
+    while "[" SUBS xr
+      calc dr dr+1
+      sedit xr xr BETWEEN 2 0
+    endwhile
+    sedit xl xl ELEMENT 1 "]" STRIM
+    sedit xr xr ELEMENT 1 "]" STRIM
+    if xl eqs "" and xr eqs "" AND dl NEQ dr
+      calc inorder dl dr LT
+      break
+    elseif xl eqs "" and xr eqs ""
+      calc dl dl-1
+      calc dr dr-1
+    elseif xl eqs ""
+      res inorder 1
+      break
+    elseif xr EQS ""
+      break
+    elseif ^xl LT ^xr
+      res inorder 1
+      break
+    elseif ^xl GT ^xr
+      break
+    elseif ^xl EQ ^xl AND dl NEQ dr
+      calc inorder dl dr LT
+      break
+    endif
+  endloop
+  if inorder GT 0
+    calc total total index +
+  endif
+endwhile
+print "TOTAL = ^total"
+
+! print " === Second Star === "
+
+endmacro
