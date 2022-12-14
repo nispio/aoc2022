@@ -19,7 +19,7 @@ while line neqs "[EOF]"
 
   mfile read input line
   sedit line notes(idx;~strt) ELEMENT 2 ":"
-  sedit notes(idx;~strt) notes(idx;~size) nele ","
+  sedit notes(idx;~strt) notes(idx;~size) NELE ","
   loop notes(idx;~size) k
     sedit notes(idx;~strt) X:monkey^{n}(k) ELEMENT k "," STRIM
   endloop

@@ -6,18 +6,18 @@ res a(301;301) 1
 noop a b
 const r CI 10 301 301
 loop g(hcb.sz) n
-sedit RULD w SEAR ^{g(n;1)}
-loop g(n;2) l
-calc L:d 1 1 ASIN w * MUX RECT
-calc r(1) r(1) d +
-loop 9 k
-calc s r(k) r(k+1) -
-calc d (0,0) s 2 / s d - d d MAG2 1 EQ X?Z:Y s MAG2 4 EQ X?Z:Y s MAG2 4 LT X?Z:Y
-calc r(k+1) r(k+1) d +
-endl
-res a(r(2;2);r(2;1)) 1
-res b(r(10;2);r(10;1)) 1
-endl
+ sedit RULD w SEAR ^{g(n;1)}
+ loop g(n;2) l
+  calc L:d 1 1 ASIN w * MUX RECT
+  calc r(1) r(1) d +
+  loop 9 k
+   calc s r(k) r(k+1) -
+   calc d (0,0) s 2 / s d - d d MAG2 1 EQ X?Z:Y s MAG2 4 EQ X?Z:Y s MAG2 4 LT X?Z:Y
+   calc r(k+1) r(k+1) d +
+  endl
+  res a(r(2;2);r(2;1)) 1
+  res b(r(10;2);r(10;1)) 1
+ endl
 endl
 fst a SUM
 fst b SUM

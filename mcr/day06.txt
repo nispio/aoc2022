@@ -1,0 +1,33 @@
+startmacro/quiet A:infile
+local tempfiles line index input meanval maxval maxidx total
+res tempfiles "indata"
+erase/nowarn ^tempfiles
+
+mdx/nohdr import infile indata(ft=B) 3
+
+print " === First Star === "
+noop indata x
+fcalc/type=L delta x x(2:) NE x x(3:) NE x x(4:) NE x(2:) x(3:) NE x(2:) x(4:) NE x(3:) x(4:) NE BAND BAND BAND BAND BAND
+maxmin delta ,,, maxidx
+calc/quiet=0 marker maxidx+3
+
+
+! print " === Second Star === "
+const g L indata(hcb.sz) 1
+res L:M 4
+noop indata x
+res A:args " "
+loop m-1 n
+  calc k m n -
+  fcalc d^k x x(^{k}+1:) NE
+  res A:args "^args d^{k}(^{n}:) BAND"
+  fcalc/type=L e^k 1 ^args
+  fcalc/type=L g g e^k BAND
+endloop
+
+
+maxmin delta ,,, maxidx
+calc/quiet=0 marker maxidx+3
+
+erase ^tempfiles
+endmacro
