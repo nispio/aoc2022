@@ -1,0 +1,92 @@
+startmacro/quiet A:infile
+local tempfiles line input idx beg end len vec pos width depth origin offset sand bottom
+res tempfiles "cave"
+erase/nowarn ^tempfiles
+
+res L:bottom 0
+res L:width 1001
+res L:depth 200
+res I:origin (500,0)
+res I:offset (1,1)
+const cave SI width*depth
+headermod cave t=2000 fs=width
+
+! Parse input
+res line " "
+res idx 0
+res input 10
+mfile open input infile
+mfile read input line
+while line neqs "[EOF]"
+  sedit line count NELE "->"
+  loop count-1 n
+    calc idx idx+1
+    sedit line I:beg ELEMENT n "->" STRIM
+    sedit line I:end ELEMENT n+1 "->" STRIM
+    calc len end beg - MAG
+    calc vec end beg - ENT MAG /
+    calc I:pos beg offset +
+    loop len+1 k
+      calc cave(^{pos(2)};^{pos(1)}) 4
+      calc bottom bottom pos(2) 2 + MAX
+      calc pos pos vec +
+    endloop
+  endloop
+  mfile read input line
+endwhile
+
+loop width k
+  calc cave(bottom;k) 4
+endloop
+
+print " === First Star === "
+res sand 0
+while 1
+  calc pos origin offset +
+  while pos(2) LT bottom-1
+    if cave(^{pos(2)}+1;^{pos(1)}) EQ 0
+      calc pos pos (0,1) +
+    elseif cave(^{pos(2)}+1;^{pos(1)}-1) EQ 0
+      calc pos pos (-1,1) +
+    elseif cave(^{pos(2)}+1;^{pos(1)}+1) EQ 0
+      calc pos pos (1,1) +
+    else
+      calc sand sand+1
+      calc cave(^{pos(2)};^{pos(1)}) 2
+      ! xraster/all/xw=150/xh=900 cave 0 2
+      break
+    endif
+  endwhile
+  if pos(2) EQ bottom-1 break
+endwhile
+
+print "Units of sand: ^sand"
+xraster/all/xw=500/xh=900 cave 0 4
+noop cave cave_part1
+
+print " === Second Star === "
+res L:full 0
+while full EQ 0
+  calc pos origin offset +
+  res I:full cave(^{pos(2)};^{pos(1)})
+  while full EQ 0
+    if cave(^{pos(2)}+1;^{pos(1)}) EQ 0
+      calc pos pos (0,1) +
+    elseif cave(^{pos(2)}+1;^{pos(1)}-1) EQ 0
+      calc pos pos (-1,1) +
+    elseif cave(^{pos(2)}+1;^{pos(1)}+1) EQ 0
+      calc pos pos (1,1) +
+    else
+      calc sand sand+1
+      calc cave(^{pos(2)};^{pos(1)}) 2
+      break
+    endif
+  endwhile
+endwhile
+
+print "Units of sand: ^sand"
+noop cave cave_part2
+xraster/bg/all/xw=500/xh=900 cave 0 4
+
+erase ^tempfiles
+endmacro
