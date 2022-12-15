@@ -12,22 +12,18 @@ maxmin delta ,,, maxidx
 calc/quiet=0 marker maxidx+3
 
 
-! print " === Second Star === "
+print " === Second Star === "
 const g L indata(hcb.sz) 1
-res L:M 4
+res L:m 14
 noop indata x
 res A:args " "
 loop m-1 n
-  calc k m n -
-  fcalc d^k x x(^{k}+1:) NE
-  res A:args "^args d^{k}(^{n}:) BAND"
-  fcalc/type=L e^k 1 ^args
-  fcalc/type=L g g e^k BAND
+  fcalc d x x(^{m-n}+1:) NE
+  res A:args "^args d(^{n}:) BAND"
+  fcalc/type=L g g 1 ^args BAND
 endloop
-
-
-maxmin delta ,,, maxidx
-calc/quiet=0 marker maxidx+3
+maxmin g ,,, maxidx
+calc/quiet=0 marker maxidx+m-1
 
 erase ^tempfiles
 endmacro
