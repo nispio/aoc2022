@@ -1,0 +1,14 @@
+s A:f
+mdx/nohdr imp f x(ft=B) 3
+loop 2 n
+const g L x(hcb.sz) 1
+res s " "
+loop 10*n-7 k
+fcalc d x x(10*n-5-k:) NE
+res s "^s d(^{k}:) BAND"
+fcalc/type=L g g 1 ^s BAND
+endl
+maxm g,,,i
+calc,,10*n-7+i
+endl
+endm
