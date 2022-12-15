@@ -1,0 +1,41 @@
+startmacro/quiet A:infile
+local tempfiles line input idx sx sy bx by
+res tempfiles "indata"
+erase/nowarn ^tempfiles
+
+csvconvert/delim="=" infile indata 3000 f1/2A f2/2A f3/5A f4/2A f5/L
+f3000/size=indata(hcb.sz) sensors pos/CL bcn/CL rng/L
+loop indata(hcb.sz) n
+  sedit indata(n;2) L:sx ELEMENT 1 ","
+  sedit indata(n;3) L:sy ELEMENT 1 ":"
+  sedit indata(n;4) L:bx ELEMENT 1 ","
+  res L:by indata(n;5)
+  calc sensors(n;~pos) (^sx,^sy)
+  calc sensors(n;~bcn) (^bx,^by)
+  calc sensors(n;~rng) sx bx - ABS sy by - ABS +
+endloop
+
+print " === First Star === "
+const map sb 50*50
+headermod map t=2000 fs=50 xs=-14 ys=-14
+res L:offset (15,15)
+loop sensors(hcb.sz) n
+  calc v sensors(n;~pos) offset +
+  res map(v(2);v(1)) 4
+  res map(sensors(n;~bcn;2)+15;sensors(n;~bcn;1)+15) 2
+  loop sensors(n;~rng)+1 jj
+    loop sensors(n;~rng)+1-jj+1 ii
+      calc map(v(2)+jj-1;v(1)+ii-1) map(v(2)+jj-1;v(1)+ii-1) 1 MAX
+      calc map(v(2)+jj-1;v(1)-ii+1) map(v(2)+jj-1;v(1)-ii+1) 1 MAX
+      calc map(v(2)-jj+1;v(1)+ii-1) map(v(2)-jj+1;v(1)+ii-1) 1 MAX
+      calc map(v(2)-jj+1;v(1)-ii+1) map(v(2)-jj+1;v(1)-ii+1) 1 MAX
+    endloop
+  endloop
+endloop
+xraster/bg/all map 0 4
+
+! print " === Second Star === "
+
+
+erase ^tempfiles
+endmacro
