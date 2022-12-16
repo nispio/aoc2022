@@ -1,6 +1,6 @@
 startmacro/quiet A:infile
 local tempfiles line input idx sx sy bx by
-res tempfiles "indata"
+res tempfiles "indata sensors spans"
 erase/nowarn ^tempfiles
 
 csvconvert/delim="=" infile indata 3000 f1/2A f2/2A f3/5A f4/2A f5/L
@@ -16,26 +16,88 @@ loop indata(hcb.sz) n
 endloop
 
 print " === First Star === "
-const map sb 50*50
-headermod map t=2000 fs=50 xs=-14 ys=-14
-res L:offset (15,15)
+res L:y 2e6
+f3000/size=sensors(hcb.sz) spans xmin/L xmax/L stat/L
 loop sensors(hcb.sz) n
-  calc v sensors(n;~pos) offset +
-  res map(v(2);v(1)) 4
-  res map(sensors(n;~bcn;2)+15;sensors(n;~bcn;1)+15) 2
-  loop sensors(n;~rng)+1 jj
-    loop sensors(n;~rng)+1-jj+1 ii
-      calc map(v(2)+jj-1;v(1)+ii-1) map(v(2)+jj-1;v(1)+ii-1) 1 MAX
-      calc map(v(2)+jj-1;v(1)-ii+1) map(v(2)+jj-1;v(1)-ii+1) 1 MAX
-      calc map(v(2)-jj+1;v(1)+ii-1) map(v(2)-jj+1;v(1)+ii-1) 1 MAX
-      calc map(v(2)-jj+1;v(1)-ii+1) map(v(2)-jj+1;v(1)-ii+1) 1 MAX
-    endloop
-  endloop
+  res L:v sensors(n;~pos)
+  res L:r sensors(n;~rng)
+  calc L:m r v(2) y - ABS -
+  if m GE 0
+    calc spans(n;~xmin) v(1) m -
+    calc spans(n;~xmax) v(1) m +
+    calc spans(n;~stat) 0
+  endif
 endloop
-xraster/bg/all map 0 4
 
-! print " === Second Star === "
+res L:total 0
+res L:index 0
+while 1
+  res curr 0
+  loop spans(hcb.sz) n
+    if spans(n;~stat) EQ 0 res curr n
+  endloop
+  if curr EQ 0 break
+  calc xmin spans(curr;~xmin)
+  calc xmax spans(curr;~xmax)
+  calc spans(curr;~stat) 1
+  res merging 1
+  while merging GT 0
+  res merging 0
+  loop spans(hcb.sz) n
+    if spans(n;~stat) EQ 0 AND xmin LE spans(n;~xmax) AND xmax GE spans(n;~xmin)
+      calc merging merging 1 +
+      calc xmin xmin spans(n;~xmin) MIN
+      calc xmax xmax spans(n;~xmax) MAX
+      calc spans(n;~stat) 1
+    endif
+  endloop
+  endwhile
+  calc total total xmax xmin - +
+endwhile
+print "^total"
 
+print " === Second Star === "
+f3000/size=sensors(hcb.sz) spans xmin/L xmax/L stat/L
+envi file open sensors
+envi file open spans
+loop 4e6 y
+  loop sensors(hcb.sz) n
+    res L:v sensors(n;~pos)
+    res L:r sensors(n;~rng)
+    calc L:m r v(2) y - ABS -
+    calc spans(n;~stat) 1
+    if m GE 0
+      calc spans(n;~xmin) v(1) m -
+      calc spans(n;~xmax) v(1) m +
+      calc spans(n;~stat) 0
+    endif
+  endloop
+
+  calc xmin spans(1;~xmin)
+  calc xmax spans(1;~xmax)
+  calc spans(1;~stat) 1
+  res merging 1
+  while merging GT 0
+    res merging 0
+    loop spans(hcb.sz) n
+      if spans(n;~stat) EQ 0
+        if xmin LE spans(n;~xmax) AND xmax GE spans(n;~xmin)
+          calc merging merging 1 +
+          calc xmin xmin spans(n;~xmin) MIN
+          calc xmax xmax spans(n;~xmax) MAX
+          calc spans(n;~stat) 1
+        endif
+      endif
+    endloop
+  endwhile
+  if xmin GT 0 OR xmax LT 4e6 break
+endloop
+
+calc x xmin 1 - xmax 1 + xmin 0 GT X?Z:Y
+calc z x 4e6 * y +
+print "^z (^{x},^{y})"
+
+envi file close *
 
 erase ^tempfiles
 endmacro
