@@ -102,6 +102,7 @@ loop 10000 round
     res notes(idx;~size) 0
   endloop
 endloop
+envi file close *
 
 qsort notes sorted D INSP
 calc/quiet=0 monkey_business sorted(1;~insp) sorted(2;~insp) *
