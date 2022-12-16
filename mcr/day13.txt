@@ -1,5 +1,7 @@
 startmacro/quiet A:infile
-local line index input n left right numl numr xl xr dl dr inorder total
+local tmpfiles line index input n left right numl numr xl xr dl dr inorder total key lenA lenB
+res A:tmpfiles "msgs"
+erase/nowarn ^tmpfiles
 
 print " === First Star === "
 res total 0
@@ -59,6 +61,27 @@ while line neqs "[EOF]"
 endwhile
 print "TOTAL = ^total"
 
-! print " === Second Star === "
+print " === Second Star === "
+csvconvert/delim=@ infile msgs 1000 Z
+envi file open msgs
+res lenA 0
+res lenB 0
+loop msgs(hcb.sz) n
+  res line msgs(n)
+  sedit line numl NELE ","
+  sedit line A:xl ELEMENT 1 ","
+  sedit xl xl GSUBS "[" "" STRIM
+  sedit xl xl GSUBS "]" "" STRIM
+  if xl eqs ""
+    res lenA lenA+1
+  elseif ^xl LT 2
+    res lenA lenA+1
+  elseif ^xl LT 6
+    res lenB lenB+1
+  endif
+endloop
+envi file close *
+print "KEY = ^calc(lenA+1 ENT lenB+1 + *)"
 
+erase ^tmpfiles
 endmacro
